@@ -1,33 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:personal_budget_workshop/model/record.dart';
 import 'package:personal_budget_workshop/provider/record_provider.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 
 class AddRecordScreen extends StatefulWidget {
+  final Record record;
+  
+  AddRecordScreen({this.record});
   @override
   _AddRecordScreenState createState() => _AddRecordScreenState();
 }
 
 class _AddRecordScreenState extends State<AddRecordScreen> {
-  final taskTitleController = TextEditingController();
-
   final _formKey = GlobalKey<FormState>();
+  Record _record;
 
   @override
-  void dispose() {
-    taskTitleController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _record = widget.record;
   }
 
-  void onAdd() {
-    final String textVal = taskTitleController.text;
-
-    if (textVal.isNotEmpty) {
-      final Record record = Record(
-        description: textVal,
-        completed: false,
-      );
-      Provider.of<RecordProvider>(context, listen: false).addRecord(record);
+  void submit() {
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
+      Provider.of<RecordProvider>(context, listen: false).addRecord(_record);
       Navigator.pop(context);
     }
   }
@@ -36,7 +35,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Task'),
+        title: Text('Adicionar Registro'),
       ),
       body: Form(
         key: _formKey,
@@ -46,45 +45,63 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextFormField(
+                key: Key("record_amount"),
+                keyboardType: TextInputType.numberWithOptions(
+                    signed: false, decimal: true),
+                decoration: InputDecoration(labelText: 'Valor'),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Por favor, adicione a quantia a ser registrada';
+                  }
+                },
+                onSaved: (amount){
+                  _record.amount = double.parse(amount);
+                },
+              ),
+              TextFormField(
                 key: Key("record_description"),
                 keyboardType: TextInputType.text,
+                decoration: InputDecoration(labelText: 'Descrição'),
                 validator: (value) {
                   if (value.isEmpty) {
-                    return 'Enter some text';
+                    return 'Por favor, adicione um valor para a descrição';
                   }
-                  return null;
+                },
+                onSaved: (description){
+                  _record.description = description;
                 },
               ),
-              TextFormField(
-                key: Key("record_amount"),
-                keyboardType: TextInputType.numberWithOptions(signed: false, decimal: true),
+              DateTimePickerFormField(
+                inputType: InputType.date,
+                format: DateFormat('yyyy-MM-dd'),
+                editable: true,
+                decoration: InputDecoration(
+                    labelText: 'Data', hasFloatingPlaceholder: false),
                 validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Enter some text';
+                  if (value == null) {
+                    return 'Por favor, selecione a data.';
                   }
-                  return null;
+                },
+                onSaved: (date) {
+                   _record.date = date;
                 },
               ),
-              TextFormField(
-                key: Key("record_date"),
-                keyboardType: TextInputType.datetime,
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Enter some text';
-                  }
-                  return null;
+              SwitchListTile(
+                title: Text(_record.isExpense? 'Despesa' : 'Receita'),
+                value: _record.isExpense,
+                onChanged: (bool value) {
+                  setState(() {
+                    _record.isExpense = value;
+                  });
                 },
-              ),
+                secondary: Icon(Icons.attach_money),
+              )
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_formKey.currentState.validate()) {
-            Navigator.pop(context, Record(description: "", completed: false));
-          }
-        },
+        onPressed: submit,
         child: Icon(Icons.save),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,

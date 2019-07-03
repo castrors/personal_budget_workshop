@@ -1,12 +1,8 @@
-
-import 'package:meta/meta.dart';
-
 class Record {
-
   String description;
-  bool completed;
+  bool isExpense;
   double amount;
   DateTime date;
 
-  Record({@required this.description, this.completed = false, @required this.amount, this.date});
+  Record({this.description, this.isExpense = false, this.amount, this.date});
 }
