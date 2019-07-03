@@ -20,7 +20,7 @@ class RecordListItem extends StatelessWidget {
         title: Text(record.description),
         subtitle: Text(record.date.toString()),
         trailing:
-            Icon(record.isExpense ? Icons.money_off : Icons.monetization_on),
+            Icon(record.isExpense ? Icons.money_off : Icons.attach_money),
         onTap: () => navigateToRecordDetail(context, record),
       ),
       onDismissed: (direction) {

@@ -101,7 +101,7 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
                     _record.isExpense = value;
                   });
                 },
-                secondary: Icon(Icons.attach_money),
+                secondary: Icon(_record.isExpense ? Icons.money_off : Icons.attach_money),
               )
             ],
           ),
