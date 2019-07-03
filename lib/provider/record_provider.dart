@@ -10,7 +10,18 @@ class RecordProvider extends ChangeNotifier {
   UnmodifiableListView<Record> get allRecords => UnmodifiableListView(_records);
 
   void addRecord(Record record) {
+    record.id = record.hashCode;
     _records.add(record);
     notifyListeners();
+  }
+
+  void updateRecord(Record record) {
+    int index = _records.indexWhere((recordSearch) => record.id == recordSearch.id);
+    _records[index] = record;
+    notifyListeners();
+  }
+
+  void deleteRecord(Record record) {
+    _records.remove(record);
   }
 }

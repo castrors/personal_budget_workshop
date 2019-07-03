@@ -5,28 +5,34 @@ import 'package:personal_budget_workshop/model/record.dart';
 import 'package:personal_budget_workshop/provider/record_provider.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 
-class AddRecordScreen extends StatefulWidget {
+class RecordDetailScreen extends StatefulWidget {
   final Record record;
-  
-  AddRecordScreen({this.record});
+
+  RecordDetailScreen({this.record});
   @override
-  _AddRecordScreenState createState() => _AddRecordScreenState();
+  _RecordDetailScreenState createState() => _RecordDetailScreenState();
 }
 
-class _AddRecordScreenState extends State<AddRecordScreen> {
+class _RecordDetailScreenState extends State<RecordDetailScreen> {
   final _formKey = GlobalKey<FormState>();
   Record _record;
+  bool isEditMode = false;
 
   @override
   void initState() {
     super.initState();
     _record = widget.record;
+    isEditMode = _record.id != null;
   }
 
   void submit() {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
-      Provider.of<RecordProvider>(context, listen: false).addRecord(_record);
+      if (isEditMode) {
+        Provider.of<RecordProvider>(context, listen: false).updateRecord(_record);
+      } else {
+        Provider.of<RecordProvider>(context, listen: false).addRecord(_record);
+      }
       Navigator.pop(context);
     }
   }
@@ -45,7 +51,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextFormField(
-                key: Key("record_amount"),
+                initialValue: _record.amount.toString(),
                 keyboardType: TextInputType.numberWithOptions(
                     signed: false, decimal: true),
                 decoration: InputDecoration(labelText: 'Valor'),
@@ -54,12 +60,12 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                     return 'Por favor, adicione a quantia a ser registrada';
                   }
                 },
-                onSaved: (amount){
+                onSaved: (amount) {
                   _record.amount = double.parse(amount);
                 },
               ),
               TextFormField(
-                key: Key("record_description"),
+                initialValue: _record.description,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(labelText: 'Descrição'),
                 validator: (value) {
@@ -67,11 +73,12 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                     return 'Por favor, adicione um valor para a descrição';
                   }
                 },
-                onSaved: (description){
+                onSaved: (description) {
                   _record.description = description;
                 },
               ),
               DateTimePickerFormField(
+                initialValue: _record.date,
                 inputType: InputType.date,
                 format: DateFormat('yyyy-MM-dd'),
                 editable: true,
@@ -83,11 +90,11 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
                   }
                 },
                 onSaved: (date) {
-                   _record.date = date;
+                  _record.date = date;
                 },
               ),
               SwitchListTile(
-                title: Text(_record.isExpense? 'Despesa' : 'Receita'),
+                title: Text(_record.isExpense ? 'Despesa' : 'Receita'),
                 value: _record.isExpense,
                 onChanged: (bool value) {
                   setState(() {
@@ -102,7 +109,7 @@ class _AddRecordScreenState extends State<AddRecordScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: submit,
-        child: Icon(Icons.save),
+        child: Icon(Icons.check),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
